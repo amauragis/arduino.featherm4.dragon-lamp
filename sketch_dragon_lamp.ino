@@ -112,7 +112,8 @@ void lighting_rainbow()
     for( int i = 0; i < leds.numPixels(); ++i )
     {
         uint32_t pixel_hue = rainbow_start + ( i * 65536L / leds.numPixels() );
-        leds.setPixelColor( i, leds.gamma32( leds.ColorHSV( pixel_hue ) ) );
+        // reverse the "flow" of color so it moves from 1->end rather than end->1
+        leds.setPixelColor( leds.numPixels() - 1 - i, leds.gamma32( leds.ColorHSV( pixel_hue ) ) );
     }
 }
 
