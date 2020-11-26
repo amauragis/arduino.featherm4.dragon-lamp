@@ -24,7 +24,7 @@ const unsigned long debounce_delay = 50;
 // globals
 static Adafruit_NeoPixel_ZeroDMA on_board( 1, PIN_ON_BOARD_LED, ON_BOARD_LED_MAP );
 static Adafruit_NeoPixel_ZeroDMA leds( NEO_STRING_NUM_PIXELS, PIN_NEO_STRING, NEO_STRING_LED_MAP );
-static uint8_t brightness_level = 8;
+static uint8_t brightness_level = 0;
 
 // fwd declare lighting functions
 void lighting_white();
@@ -36,31 +36,16 @@ void lighting_green_fire();
 // global array for holding lighting functions
 void ( *lighting_functions[] )() = { lighting_white, lighting_red, lighting_rainbow, lighting_fire, lighting_green_fire };
 const int num_lighting_modes     = sizeof( lighting_functions ) / sizeof( lighting_functions[ 0 ] );
-static int lighting_idx          = 3; // active lighting function index
+static int lighting_idx          = 0; // active lighting function index (and powerup mode)
 
-// ███████╗███████╗████████╗██╗   ██╗██████╗
-// ██╔════╝██╔════╝╚══██╔══╝██║   ██║██╔══██╗
-// ███████╗█████╗     ██║   ██║   ██║██████╔╝
-// ╚════██║██╔══╝     ██║   ██║   ██║██╔═══╝
-// ███████║███████╗   ██║   ╚██████╔╝██║
-// ╚══════╝╚══════╝   ╚═╝    ╚═════╝ ╚═╝
-void setup()
+// set the status led to the specified color
+void set_status_led( uint16_t pixel_hue )
 {
-    randomSeed( analogRead( A0 ) ); // A0 floating
-
-    on_board.begin();
-    on_board.setBrightness( 8 );
     for( int i = 0; i < on_board.numPixels(); ++i )
     {
-        on_board.setPixelColor( i, on_board.Color( 255, 255, 255 ) );
+        on_board.setPixelColor( i, leds.gamma32( leds.ColorHSV( pixel_hue ) ) );
     }
     on_board.show();
-
-    leds.begin();
-    leds.setBrightness( brightness_level );
-
-    pinMode( PIN_MODE_BTN, INPUT );
-    analogReadResolution( 8 );
 }
 
 // debounced check for a negative edge on the mode button, increment global lighting index
@@ -83,7 +68,9 @@ void check_mode_btn()
 
             if( button_state == LOW )
             {
-                lighting_idx = ( lighting_idx + 1 ) % num_lighting_modes;
+                lighting_idx        = ( lighting_idx + 1 ) % num_lighting_modes;
+                uint16_t status_hue = hue_deg_to_u16( lighting_idx * ( 360 / num_lighting_modes ) );
+                set_status_led( status_hue );
                 Serial.print( "New Lighting Mode: " );
                 Serial.print( lighting_idx, DEC );
                 Serial.print( "\n" );
@@ -124,8 +111,8 @@ void lighting_rainbow()
     uint32_t rainbow_start = micros() / 24;
     for( int i = 0; i < leds.numPixels(); ++i )
     {
-        uint32_t pixelHue = rainbow_start + ( i * 65536L / leds.numPixels() );
-        leds.setPixelColor( i, leds.gamma32( leds.ColorHSV( pixelHue ) ) );
+        uint32_t pixel_hue = rainbow_start + ( i * 65536L / leds.numPixels() );
+        leds.setPixelColor( i, leds.gamma32( leds.ColorHSV( pixel_hue ) ) );
     }
 }
 
@@ -215,6 +202,28 @@ void lighting_fire()
 
         leds.setPixelColor( pix_ix, leds.gamma32( leds.ColorHSV( hue, sat, val ) ) );
     }
+}
+
+// ███████╗███████╗████████╗██╗   ██╗██████╗
+// ██╔════╝██╔════╝╚══██╔══╝██║   ██║██╔══██╗
+// ███████╗█████╗     ██║   ██║   ██║██████╔╝
+// ╚════██║██╔══╝     ██║   ██║   ██║██╔═══╝
+// ███████║███████╗   ██║   ╚██████╔╝██║
+// ╚══════╝╚══════╝   ╚═╝    ╚═════╝ ╚═╝
+void setup()
+{
+    randomSeed( analogRead( A0 ) ); // A0 floating
+
+    on_board.begin();
+    on_board.setBrightness( 2 );
+    uint16_t status_hue = hue_deg_to_u16( lighting_idx * ( 360 / num_lighting_modes ) );
+    set_status_led( status_hue );
+
+    leds.begin();
+    leds.setBrightness( brightness_level );
+
+    pinMode( PIN_MODE_BTN, INPUT );
+    analogReadResolution( 8 );
 }
 
 // ██╗      ██████╗  ██████╗ ██████╗
