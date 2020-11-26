@@ -4,22 +4,19 @@
 #include <Adafruit_NeoPixel.h>
 #include <Adafruit_NeoPixel_ZeroDMA.h>
 
-#define hue_deg_to_u16( D ) ( ( 65535L ) * D / 360 )
-#define pct_to_u8( P ) ( ( 255 ) * P / 100 )
-
 // pin assignments
-const int PIN_ON_BOARD_LED = 8;
-const int PIN_NEO_STRING   = 12;
-const int PIN_MODE_BTN     = 10;
-const int PIN_DIM_POT      = 17;
+constexpr int PIN_ON_BOARD_LED = 8;
+constexpr int PIN_NEO_STRING   = 12;
+constexpr int PIN_MODE_BTN     = 10;
+constexpr int PIN_DIM_POT      = 17;
 
 // neopixel configs
-const int NEO_STRING_NUM_PIXELS   = 21;
-const uint32_t ON_BOARD_LED_MAP   = NEO_GRB;
-const uint32_t NEO_STRING_LED_MAP = NEO_GRBW;
+constexpr int NEO_STRING_NUM_PIXELS   = 21;
+constexpr uint32_t ON_BOARD_LED_MAP   = NEO_GRB;
+constexpr uint32_t NEO_STRING_LED_MAP = NEO_GRBW;
 
 // debounce config
-const unsigned long debounce_delay = 50;
+constexpr unsigned long debounce_delay = 50;
 
 // globals
 static Adafruit_NeoPixel_ZeroDMA on_board( 1, PIN_ON_BOARD_LED, ON_BOARD_LED_MAP );
@@ -35,8 +32,18 @@ void lighting_green_fire();
 
 // global array for holding lighting functions
 void ( *lighting_functions[] )() = { lighting_white, lighting_red, lighting_rainbow, lighting_fire, lighting_green_fire };
-const int num_lighting_modes     = sizeof( lighting_functions ) / sizeof( lighting_functions[ 0 ] );
+constexpr int num_lighting_modes = sizeof( lighting_functions ) / sizeof( lighting_functions[ 0 ] );
 static int lighting_idx          = 0; // active lighting function index (and powerup mode)
+
+constexpr uint16_t hue_deg_to_u16( int D )
+{
+    return 65535L * D / 360;
+}
+
+constexpr uint8_t pct_to_u8( int P )
+{
+    return 255 * P / 100;
+}
 
 // set the status led to the specified color
 void set_status_led( uint16_t pixel_hue )
@@ -119,15 +126,15 @@ void lighting_rainbow()
 
 void lighting_green_fire()
 {
-    const uint32_t update_interval = 50; // ms
+    constexpr uint32_t update_interval = 50; // ms
 
     const uint32_t base_color = leds.gamma32( leds.ColorHSV( hue_deg_to_u16( 110 ), pct_to_u8( 90 ), pct_to_u8( 100 ) ) );
 
-    const uint8_t num_rdm_pix = 12;
-    const uint16_t rdm_hue_lo = hue_deg_to_u16( 75 );
-    const uint16_t rdm_hue_hi = hue_deg_to_u16( 180 );
-    const uint8_t rdm_sat_lo  = pct_to_u8( 60 );
-    const uint8_t rdm_sat_hi  = pct_to_u8( 100 );
+    constexpr uint8_t num_rdm_pix = 12;
+    constexpr uint16_t rdm_hue_lo = hue_deg_to_u16( 75 );
+    constexpr uint16_t rdm_hue_hi = hue_deg_to_u16( 180 );
+    constexpr uint8_t rdm_sat_lo  = pct_to_u8( 60 );
+    constexpr uint8_t rdm_sat_hi  = pct_to_u8( 100 );
 
     static uint32_t last_update = 0;
 
@@ -148,19 +155,19 @@ void lighting_green_fire()
     {
         if( i < num_rdm_pix / 3 ) // make a third of the pixels some degree of purple
         {
-            int pix_ix        = random( 0, leds.numPixels() );
-            uint16_t hue      = hue_deg_to_u16( 280 );
-            uint8_t sat       = random( rdm_sat_lo, rdm_sat_hi );
-            const uint8_t val = pct_to_u8( 100 );
+            int pix_ix            = random( 0, leds.numPixels() );
+            uint16_t hue          = hue_deg_to_u16( 280 );
+            uint8_t sat           = random( rdm_sat_lo, rdm_sat_hi );
+            constexpr uint8_t val = pct_to_u8( 100 );
 
             leds.setPixelColor( pix_ix, leds.gamma32( leds.ColorHSV( hue, sat, val ) ) );
         }
         else // the rest use the random parameters
         {
-            int pix_ix        = random( 0, leds.numPixels() );
-            uint16_t hue      = random( rdm_hue_lo, rdm_hue_hi );
-            uint8_t sat       = random( rdm_sat_lo, rdm_sat_hi );
-            const uint8_t val = pct_to_u8( 100 );
+            int pix_ix            = random( 0, leds.numPixels() );
+            uint16_t hue          = random( rdm_hue_lo, rdm_hue_hi );
+            uint8_t sat           = random( rdm_sat_lo, rdm_sat_hi );
+            constexpr uint8_t val = pct_to_u8( 100 );
 
             leds.setPixelColor( pix_ix, leds.gamma32( leds.ColorHSV( hue, sat, val ) ) );
         }
@@ -169,15 +176,15 @@ void lighting_green_fire()
 
 void lighting_fire()
 {
-    const uint32_t update_interval = 50; // ms
+    constexpr uint32_t update_interval = 50; // ms
 
     const uint32_t base_color = leds.gamma32( leds.ColorHSV( hue_deg_to_u16( 30 ), pct_to_u8( 85 ), pct_to_u8( 100 ) ) );
 
-    const uint8_t num_rdm_pix = 5;
-    const uint16_t rdm_hue_lo = hue_deg_to_u16( 0 );
-    const uint16_t rdm_hue_hi = hue_deg_to_u16( 55 );
-    const uint8_t rdm_sat_lo  = pct_to_u8( 60 );
-    const uint8_t rdm_sat_hi  = pct_to_u8( 100 );
+    constexpr uint8_t num_rdm_pix = 5;
+    constexpr uint16_t rdm_hue_lo = hue_deg_to_u16( 0 );
+    constexpr uint16_t rdm_hue_hi = hue_deg_to_u16( 55 );
+    constexpr uint8_t rdm_sat_lo  = pct_to_u8( 60 );
+    constexpr uint8_t rdm_sat_hi  = pct_to_u8( 100 );
 
     static uint32_t last_update = 0;
 
@@ -196,10 +203,10 @@ void lighting_fire()
 
     for( int i = 0; i < num_rdm_pix; ++i )
     {
-        int pix_ix        = random( 0, leds.numPixels() );
-        uint16_t hue      = random( rdm_hue_lo, rdm_hue_hi );
-        uint8_t sat       = random( rdm_sat_lo, rdm_sat_hi );
-        const uint8_t val = pct_to_u8( 100 );
+        int pix_ix            = random( 0, leds.numPixels() );
+        uint16_t hue          = random( rdm_hue_lo, rdm_hue_hi );
+        uint8_t sat           = random( rdm_sat_lo, rdm_sat_hi );
+        constexpr uint8_t val = pct_to_u8( 100 );
 
         leds.setPixelColor( pix_ix, leds.gamma32( leds.ColorHSV( hue, sat, val ) ) );
     }
